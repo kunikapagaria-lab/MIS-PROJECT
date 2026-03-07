@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderTrail • Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+<!-- PERFECT HEADER - SAME AS ALL PAGES -->
+<header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center">
+        <i class="fas fa-gem text-orange-600 text-2xl mr-3"></i>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">OrderTrail</h1>
+      </div>
+      <nav class="hidden md:flex space-x-8 text-sm font-medium">
+  <a href="index.html" class="text-orange-600 font-bold">Dashboard</a>
+  <a href="sales-orders.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Sales Orders</a>
+  <a href="stock.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Stock</a>
+  <a href="dispatch-new.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dispatch</a>
+  <a href="#" onclick="localStorage.clear();location.href='login.html'" class="text-red-600 hover:text-red-700">Logout</a>
+</nav>
+      <button id="mob" class="md:hidden text-gray-700 dark:text-white"><i class="fas fa-bars text-xl"></i></button>
+    </div>
+    <div id="mobileMenu" class="hidden md:hidden bg-white dark:bg-gray-800 border-t">
+      <a href="index.html" class="block px-6 py-3 text-orange-600 font-bold">Dashboard</a>
+      <a href="sales-orders.html" class="block px-6 py-3">Sales Orders</a>
+      <a href="stock.html" class="block px-6 py-3">Stock</a>
+      <a href="dispatch-new.html" class="block px-6 py-3">Dispatch</a>
+      <a href="#" onclick="localStorage.clear();location.href='login.html'" class="block px-6 py-3 text-red-600">Logout</a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-10">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+    <div>
+      <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Welcome back, Mr. Vijay</h2>
+      <p class="text-gray-600 dark:text-gray-400">Saturday, 30 November 2025</p>
+    </div>
+    <a href="sales-order-new.html" class="mt-4 md:mt-0 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg shadow-lg transition">
+      + New Sales Order
+    </a>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-blue-600">
+      <p class="text-sm text-gray-600 dark:text-gray-400">Open Orders</p>
+      <p class="text-4xl font-bold text-blue-600 mt-2">12</p>
+      <p class="text-sm text-gray-500 mt-1">₹18.4 Lakh pending</p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-green-600">
+      <p class="text-sm text-gray-600 dark:text-gray-400">Today's Dispatch</p>
+      <p class="text-4xl font-bold text-green-600 mt-2">4</p>
+      <p class="text-sm text-gray-500 mt-1">820 boxes</p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-red-600">
+      <p class="text-sm text-gray-600 dark:text-gray-400">Low Stock Alert</p>
+      <p class="text-4xl font-bold text-red-600 mt-2">3 items</p>
+      <p class="text-sm text-gray-500 mt-1">Below 100 boxes</p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-yellow-500">
+      <p class="text-sm text-gray-600 dark:text-gray-400">Customer Rating</p>
+      <p class="text-4xl font-bold text-yellow-500 mt-2">4.9</p>
+      <p class="text-sm text-gray-500 mt-1">Based on 87 deliveries</p>
+    </div>
+  </div>
+
+  <!-- SALES CHART -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+    <h3 class="text-xl font-bold mb-6 text-gray-800 dark:text-white">Sales Trend 2025</h3>
+    <canvas id="salesChart" height="100"></canvas>
+  </div>
+</main>
+
+<script>
+if(!localStorage.getItem('isLoggedIn')) location.href='login.html';
+document.getElementById('mob').onclick = () => document.getElementById('mobileMenu').classList.toggle('hidden');
+
+new Chart(document.getElementById('salesChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [{
+      label: 'Sales (₹ Lakh)',
+      data: [8,12,18,22,28,35,32,40,38,45,52,68],
+      borderColor: '#ea580c',
+      backgroundColor: 'rgba(234,88,12,0.1)',
+      tension: 0.4,
+      fill: true
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+</script>
+</body>
+</html>

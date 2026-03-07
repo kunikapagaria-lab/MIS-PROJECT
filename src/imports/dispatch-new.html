@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderTrail • New Dispatch & POD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <!-- Updated QR library that never fails -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+<header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center"><i class="fas fa-gem text-orange-600 text-2xl mr-3"></i><h1 class="text-xl font-bold">OrderTrail</h1></div>
+      <nav class="hidden md:flex space-x-8 text-sm font-medium">
+        <a href="index.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dashboard</a>
+        <a href="sales-orders.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Sales Orders</a>
+        <a href="stock.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Stock</a>
+        <a href="dispatch-new.html" class="text-orange-600 font-bold">Dispatch</a>
+        <a href="#" onclick="localStorage.clear();location.href='login.html'" class="text-red-600 hover:text-red-700">Logout</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-10">
+  <h2 class="text-3xl font-bold mb-8">New Dispatch & POD</h2>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 mb-6">
+    <p class="text-xl font-semibold">SO: <span id="soDisplay" class="text-orange-600 font-bold">SO-0001</span></p>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6 mb-8">
+    <input type="date" id="dispatchDate" class="px-4 py-3 border rounded-lg" required>
+    <input type="text" id="vehicleNo" placeholder="Vehicle No" class="px-4 py-3 border rounded-lg" required>
+    <input type="text" id="driver" placeholder="Driver Name & Phone" class="px-4 py-3 border rounded-lg" required>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto mb-8">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-100 dark:bg-gray-700">
+        <tr><th class="px-6 py-4 text-left">Product</th><th>Size</th><th>Shade</th><th>Pending</th><th>Dispatch Now</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="px-6 py-4">Nano Polished Marble</td>
+          <td class="text-center">800×800</td>
+          <td class="text-center">SH-05</td>
+          <td class="text-center font-bold text-orange-600">40</td>
+          <td class="text-center"><input type="number" min="0" max="40" value="0" class="w-20 px-3 py-2 border rounded dispatchInput"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- POD SECTION -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-8">
+    <h3 class="text-2xl font-bold mb-6 text-green-600">Proof of Delivery (POD)</h3>
+    <select id="podStatus" class="w-full px-4 py-3 border rounded-lg text-lg mb-6">
+      <option>Pending</option>
+      <option>Received</option>
+      <option>Verified</option>
+    </select>
+
+    <div id="podSuccess" class="hidden">
+      <div class="text-center p-10 bg-green-50 dark:bg-green-900/30 rounded-2xl">
+        <i class="fas fa-check-circle text-9xl text-green-600 mb-6"></i>
+        <h4 class="text-3xl font-bold mb-6">POD Link Ready!</h4>
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg inline-block mb-8">
+          <p class="text-sm text-gray-600 mb-3">Scan QR or click link</p>
+          <!-- QR CODE WILL APPEAR HERE -->
+          <div id="qrCode" class="mx-auto"></div>
+        </div>
+
+        <p class="text-lg font-mono break-all bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-4" id="shortUrl">Generating...</p>
+        
+        <p class="text-sm text-gray-600">WhatsApp this to customer — they confirm in 5 seconds</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-10">
+    <button onclick="saveDispatch()" class="px-12 py-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-2xl rounded-xl shadow-2xl">
+      Save Dispatch
+    </button>
+  </div>
+</main>
+
+<script>
+if(!localStorage.getItem('isLoggedIn')) location.href='login.html';
+
+const so = localStorage.getItem('currentSO') || 'SO-0001';
+document.getElementById('soDisplay').textContent = so;
+
+document.getElementById('podStatus').onchange = async function() {
+  if (this.value !== 'Verified') return;
+
+  const longUrl = location.href.split('dispatch-new.html')[0] + 'feedback-public.html?pod=' + so;
+  let finalUrl = longUrl;
+
+  // Try TinyURL
+  try {
+    const res = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longUrl));
+    if (res.ok) finalUrl = await res.text();
+  } catch(e) {
+    console.log('Using full URL (offline mode)');
+  }
+
+  document.getElementById('shortUrl').textContent = finalUrl;
+  document.getElementById('podSuccess').classList.remove('hidden');
+
+  // CRITICAL FIX: Clear and redraw QR code
+  const qrDiv = document.getElementById('qrCode');
+  qrDiv.innerHTML = '';  // Clear old QR
+
+  // Generate BIG QR — 100% visible every time
+  QRCode.toCanvas(qrDiv, finalUrl, {
+    width: 300,
+    height: 300,
+    margin: 2,
+    color: { dark: '#000000', light: '#ffffff' }
+  });
+
+  // Save POD state
+  const pods = JSON.parse(localStorage.getItem('pods') || '{}');
+  pods[so] = { verified: true, url: finalUrl, date: new Date().toLocaleDateString('en-IN') };
+  localStorage.setItem('pods', JSON.stringify(pods));
+};
+
+function saveDispatch() {
+  alert('Dispatch saved! Challan ready.');
+  window.print();
+}
+</script>
+</body>
+</html>

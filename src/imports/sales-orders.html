@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderTrail • Sales Orders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+<header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center">
+        <i class="fas fa-gem text-orange-600 text-2xl mr-3"></i>
+        <h1 class="text-xl font-bold">OrderTrail</h1>
+      </div>
+      <nav class="hidden md:flex space-x-8 text-sm font-medium">
+        <a href="index.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dashboard</a>
+        <a href="sales-orders.html" class="text-orange-600 font-bold">Sales Orders</a>
+        <a href="stock.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Stock</a>
+        <a href="dispatch-new.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dispatch</a>
+        <a href="#" onclick="localStorage.clear();location.href='login.html'" class="text-red-600 hover:text-red-700">Logout</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-10">
+  <div class="flex justify-between items-center mb-8">
+    <h2 class="text-3xl font-bold">Sales Orders</h2>
+    <div class="flex gap-4">
+      <a href="sales-order-new.html" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg shadow flex items-center gap-2">
+        <i class="fas fa-plus"></i> New Sales Order
+      </a>
+      <button id="openBulk" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow flex items-center gap-2">
+        <i class="fas fa-file-excel"></i> Bulk Upload Excel
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-100 dark:bg-gray-700 text-xs uppercase">
+        <tr>
+          <th class="px-6 py-4 text-left">SO No</th>
+          <th class="px-6 py-4">Date</th>
+          <th class="px-6 py-4">Customer</th>
+          <th class="px-6 py-4">Site</th>
+          <th class="px-6 py-4 text-center">Boxes</th>
+          <th class="px-6 py-4 text-right">Amount</th>
+          <th class="px-6 py-4">Status</th>
+          <th class="px-6 py-4">POD</th>
+          <th class="px-6 py-4 text-center">View</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- BULK MODAL -->
+<div id="bulkModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl p-8">
+    <h3 class="text-2xl font-bold mb-6">Bulk Upload Sales Orders</h3>
+    
+    <input type="file" id="excelInput" accept=".xlsx,.xls" class="block w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded file:bg-green-600 file:text-white mb-6">
+    
+    <a href="#" id="templateLink" class="text-orange-600 font-bold mb-6 inline-block">Download Excel Template</a>
+
+    <div id="previewDiv" class="hidden mt-6">
+      <p class="font-bold text-lg mb-4">Preview: <span id="previewCount">0</span> orders will be created</p>
+      <div class="max-h-96 overflow-auto border rounded-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100 sticky top-0">
+            <tr><th class="p-3 text-left">SO No</th><th>Customer</th><th>Site</th><th>Product</th><th class="text-right">Boxes</th></tr>
+          </thead>
+          <tbody id="previewTable"></tbody>
+        </table>
+      </div>
+      <button id="createBtn" class="mt-6 w-full py-4 bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-lg">
+        Create All Orders Now
+      </button>
+    </div>
+
+    <button onclick="document.getElementById('bulkModal').classList.add('hidden')" class="mt-6 text-gray-500 hover:text-gray-700">Close</button>
+  </div>
+</div>
+
+<script>
+// Security
+if(!localStorage.getItem('isLoggedIn')) location.href='login.html';
+
+// Create sample data once
+if(!localStorage.getItem('salesOrders')){
+  const sample = [
+    {id:"SO-0001",date:"25-Nov-2025",customer:"ABC Tiles Mart",site:"Shyam Villa, Kolkata",totalBoxes:120,grandTotal:531000,status:"Partially Dispatched",pod:true},
+    {id:"SO-0002",date:"26-Nov-2025",customer:"Royal Ceramics",site:"Sunrise Tower, Rajkot",totalBoxes:200,grandTotal:885000,status:"Pending",pod:false},
+    {id:"SO-0003",date:"27-Nov-2025",customer:"Maruti Traders",site:"Green City, Jamshedpur",totalBoxes:80,grandTotal:354000,status:"Dispatched",pod:true},
+    {id:"SO-0004",date:"28-Nov-2025",customer:"Shreeji Tiles",site:"Pal Road, Kolkata",totalBoxes:150,grandTotal:663750,status:"Pending",pod:false},
+    {id:"SO-0005",date:"29-Nov-2025",customer:"Ganesh Ceramics",site:"VIP Road, Kharagpur",totalBoxes:90,grandTotal:398250,status:"Partially Dispatched",pod:false}
+  ];
+  localStorage.setItem('salesOrders', JSON.stringify(sample));
+}
+
+// Load table
+function loadTable(){
+  const orders = JSON.parse(localStorage.getItem('salesOrders') || '[]');
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  orders.forEach(o => {
+    tbody.innerHTML += `
+      <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="localStorage.setItem('currentSO','${o.id}');location.href='sales-order-view.html'">
+        <td class="px-6 py-4 font-bold text-orange-600">${o.id}</td>
+        <td class="px-6 py-4">${o.date}</td>
+        <td class="px-6 py-4">${o.customer}</td>
+        <td class="px-6 py-4">${o.site}</td>
+        <td class="px-6 py-4 text-center font-bold">${o.totalBoxes}</td>
+        <td class="px-6 py-4 text-right font-bold">₹${o.grandTotal.toLocaleString('en-IN')}</td>
+        <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs ${o.status.includes('Partial')?'bg-orange-100 text-orange-800':'bg-green-100 text-green-800'}">${o.status}</span></td>
+        <td class="px-6 py-4 text-center">${o.pod ? 'Verified' : 'Pending'}</td>
+        <td class="px-6 py-4 text-center text-blue-600"><i class="fas fa-eye"></i></td>
+      </tr>`;
+  });
+}
+loadTable();
+
+// Open modal
+document.getElementById('openBulk').onclick = () => document.getElementById('bulkModal').classList.remove('hidden');
+
+// Download template
+document.getElementById('templateLink').onclick = e => {
+  e.preventDefault();
+  const data = [["SO No","Date","Customer Name","Site","Phone","Expected Date","Product","Size","Shade","Boxes"]];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Orders");
+  XLSX.writeFile(wb, "OrderTrail_Bulk_Template.xlsx");
+};
+
+// Excel upload
+document.getElementById('excelInput').onchange = e => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const data = ev.target.result;
+    const workbook = XLSX.read(data, {type: 'binary'});
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {header:1}).slice(1).filter(r => r[0]);
+    
+    document.getElementById('previewCount').textContent = rows.length;
+    const tb = document.getElementById('previewTable');
+    tb.innerHTML = '';
+    rows.forEach(r => {
+      tb.innerHTML += `<tr>
+        <td class="p-3">${r[0]}</td>
+        <td class="p-3">${r[2] || ''}</td>
+        <td class="p-3">${r[3] || ''}</td>
+        <td class="p-3">${r[6] || ''}</td>
+        <td class="p-3 text-right">${r[9] || 0}</td>
+      </tr>`;
+    });
+    document.getElementById('previewDiv').classList.remove('hidden');
+    
+    // Save for create button
+    window.tempRows = rows;
+  };
+  reader.readAsBinaryString(file);
+};
+
+// Create all orders
+document.getElementById('createBtn').onclick = () => {
+  if(!window.tempRows) return;
+  let orders = JSON.parse(localStorage.getItem('salesOrders') || '[]');
+  window.tempRows.forEach(r => {
+    orders.push({
+      id: r[0],
+      date: r[1] || new Date().toISOString().split('T')[0],
+      customer: r[2] || 'Unknown Customer',
+      site: r[3] || '',
+      totalBoxes: Number(r[9]) || 0,
+      grandTotal: Math.round((Number(r[9]) || 0) * 3750 * 1.18),
+      status: "Pending",
+      pod: false
+    });
+  });
+  localStorage.setItem('salesOrders', JSON.stringify(orders));
+  alert(`${window.tempRows.length} orders created successfully!`);
+  document.getElementById('bulkModal').classList.add('hidden');
+  loadTable();
+};
+</script>
+</body>
+</html>

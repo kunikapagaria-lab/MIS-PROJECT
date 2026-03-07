@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderTrail • New Sales Order</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+<header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center"><i class="fas fa-gem text-orange-600 text-2xl mr-3"></i><h1 class="text-xl font-bold">OrderTrail</h1></div>
+      <nav class="hidden md:flex space-x-8 text-sm font-medium">
+  <a href="index.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dashboard</a>
+  <a href="sales-orders.html" class="text-orange-600 font-bold">Sales Orders</a>
+  <a href="stock.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Stock</a>
+  <a href="dispatch-new.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dispatch</a>
+  <a href="#" onclick="localStorage.clear();location.href='login.html'" class="text-red-600 hover:text-red-700">Logout</a>
+</nav>
+      <button id="mob" class="md:hidden"><i class="fas fa-bars text-xl"></i></button>
+    </div>
+    <div id="mobileMenu" class="hidden md:hidden bg-white dark:bg-gray-800 border-t">...</div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-10">
+  <h2 class="text-3xl font-bold mb-8 text-gray-800 dark:text-white">Create New Sales Order</h2>
+
+  <div class="grid lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <input type="text" id="custName" placeholder="Customer Name *" required class="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700">
+          <input type="text" id="site" placeholder="Site / Project *" required class="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700">
+          <input type="tel" id="phone" placeholder="Phone" class="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700">
+          <input type="date" id="expDate" required class="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700">
+        </div>
+
+        <div id="items" class="space-y-4">
+          <div class="grid grid-cols-12 gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg font-medium text-sm">
+            <div class="col-span-4">Product</div>
+            <div class="col-span-2 text-center">Size</div>
+            <div class="col-span-2 text-center">Shade</div>
+            <div class="col-span-2 text-center">Boxes</div>
+            <div class="col-span-2 text-center">Rate</div>
+          </div>
+          <div class="item grid grid-cols-12 gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <input type="text" placeholder="Nano Polished" class="col-span-4 px-4 py-3 border rounded-lg">
+            <input type="text" placeholder="800x800" class="col-span-2 px-4 py-3 border rounded-lg text-center">
+            <input type="text" placeholder="SH-05" class="col-span-2 px-4 py-3 border rounded-lg text-center">
+            <input type="number" min="1" class="boxes col-span-2 px-4 py-3 border rounded-lg text-center" oninput="calc()">
+            <input type="number" value="3750" class="rate col-span-2 px-4 py-3 border rounded-lg text-center" oninput="calc()">
+            <button type="button" onclick="this.parentElement.remove();calc()" class="text-red-600"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+
+        <button type="button" onclick="addItem()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow">
+          + Add Item
+        </button>
+      </div>
+    </div>
+
+    <div class="lg:col-span-1">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 sticky top-24">
+        <h3 class="text-xl font-bold mb-6">Order Summary</h3>
+        <div class="space-y-4 text-lg">
+          <div class="flex justify-between"><span>Subtotal</span><span id="subtotal">₹0</span></div>
+          <div class="flex justify-between"><span>CGST 9%</span><span id="cgst">₹0</span></div>
+          <div class="flex justify-between"><span>SGST 9%</span><span id="sgst">₹0</span></div>
+          <hr class="border-t-2 border-orange-200 dark:border-orange-800">
+          <div class="flex justify-between text-2xl font-bold text-orange-600">
+            <span>Grand Total</span><span id="grandtotal">₹0</span>
+          </div>
+        </div>
+        <button onclick="saveSO()" class="w-full mt-8 py-5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold text-xl rounded-xl shadow-lg">
+          Save Sales Order
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+if(!localStorage.getItem('isLoggedIn')) location.href='login.html';
+document.getElementById('mob').onclick=()=>document.getElementById('mobileMenu').classList.toggle('hidden');
+
+function addItem() {
+  const template = document.querySelector('.item');
+  document.getElementById('items').insertAdjacentHTML('beforeend', template.outerHTML);
+}
+
+function calc() {
+  let total = 0;
+  document.querySelectorAll('.item').forEach(row => {
+    const boxes = parseFloat(row.querySelector('.boxes').value) || 0;
+    const rate = parseFloat(row.querySelector('.rate').value) || 0;
+    total += boxes * rate;
+  });
+  const cgst = total * 0.09;
+  const sgst = total * 0.09;
+  document.getElementById('subtotal').textContent = '₹' + total.toLocaleString('en-IN');
+  document.getElementById('cgst').textContent = '₹' + cgst.toFixed(0);
+  document.getElementById('sgst').textContent = '₹' + sgst.toFixed(0);
+  document.getElementById('grandtotal').textContent = '₹' + (total + cgst + sgst).toLocaleString('en-IN');
+}
+function saveSO() {
+  alert('Sales Order Created Successfully!');
+  location.href = 'sales-orders.html';
+}
+document.querySelectorAll('input').forEach(i => i.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>

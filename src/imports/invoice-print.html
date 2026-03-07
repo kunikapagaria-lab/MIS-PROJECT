@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Invoice - OrderTrail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    @media print {
+      body { margin: 0; padding: 20px; }
+      .no-print { display: none !important; }
+      @page { size: A4; margin: 0.5in; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans" onload="window.print()">
+
+<div class="max-w-4xl mx-auto bg-white shadow-2xl">
+  <!-- Header -->
+  <div class="border-b-4 border-orange-600 p-8 text-center">
+    <h1 class="text-4xl font-bold text-orange-600">TAX INVOICE</h1>
+    <p class="text-xl mt-2">Vijay Ceramics</p>
+    <p>GSTIN: 33AAXXX1234X1ZX • Phone: +91 98765 43210</p>
+    <p>8-A, National Highway, Jamshedpur-363642, West Bengal</p>
+  </div>
+
+  <!-- Bill To / Ship To -->
+  <div class="grid grid-cols-2 gap-8 p-8 border-b">
+    <div>
+      <h3 class="font-bold text-lg mb-3">Billed To:</h3>
+      <p class="font-semibold">ABC Tiles Mart</p>
+      <p>123, Ring Road, Kolkata</p>
+      <p>GSTIN: 33BBBBB5678B1Z9</p>
+      <p>Phone: +91 98765 43210</p>
+    </div>
+    <div>
+      <h3 class="font-bold text-lg mb-3">Ship To:</h3>
+      <p class="font-semibold">Shyam Villa</p>
+      <p>Near Adajan Lake, Kolkata</p>
+      <p>Contact: Mr. Binani</p>
+    </div>
+  </div>
+
+  <!-- Invoice Details -->
+  <div class="grid grid-cols-2 gap-8 p-8 border-b bg-gray-50">
+    <div>
+      <p><strong>Invoice No:</strong> INV-2025/012</p>
+      <p><strong>Date:</strong> 30-Nov-2025</p>
+    </div>
+    <div>
+      <p><strong>Sales Order:</strong> SO-0001</p>
+      <p><strong>Due Date:</strong> 15-Dec-2025</p>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <table class="w-full text-sm">
+    <thead class="bg-orange-600 text-white">
+      <tr>
+        <th class="px-6 py-4 text-left">Description</th>
+        <th class="px-6 py-4 text-center">HSN</th>
+        <th class="px-6 py-4 text-center">Qty (Boxes)</th>
+        <th class="px-6 py-4 text-center">Rate/Box</th>
+        <th class="px-6 py-4 text-center">Amount</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <tr class="hover:bg-gray-50">
+        <td class="px-6 py-5">Nano Polished Marble 800x800 SH-05</td>
+        <td class="text-center">6907</td>
+        <td class="text-center font-bold">80</td>
+        <td class="text-center">₹3,750</td>
+        <td class="text-right font-bold">₹3,00,000</td>
+      </tr>
+      <tr class="hover:bg-gray-50">
+        <td class="px-6 py-5">Wood Plank Series 600x1200 WD-02</td>
+        <td class="text-center">6907</td>
+        <td class="text-center font-bold">40</td>
+        <td class="text-center">₹3,750</td>
+        <td class="text-right font-bold">₹1,50,000</td>
+      </tr>
+      <tr class="bg-orange-50 font-bold text-lg">
+        <td colspan="4" class="px-6 py-5 text-right">Sub Total</td>
+        <td class="text-right">₹4,50,000</td>
+      </tr>
+      <tr>
+        <td colspan="4" class="px-6 py-4 text-right">CGST @9%</td>
+        <td class="text-right">₹40,500</td>
+      </tr>
+      <tr>
+        <td colspan="4" class="px-6 py-4 text-right">SGST @9%</td>
+        <td class="text-right">₹40,500</td>
+      </tr>
+      <tr class="bg-orange-600 text-white font-bold text-xl">
+        <td colspan="4" class="px-6 py-5 text-right">Grand Total</td>
+        <td class="text-right">₹5,31,000</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Amount in Words -->
+  <div class="p-8 border-t-4 border-orange-600 bg-gray-50">
+    <p><strong>Amount in Words:</strong> Rupees Five Lakh Thirty One Thousand Only</p>
+  </div>
+
+  <!-- Footer -->
+  <div class="p-8 text-center text-gray-600 border-t">
+    <p class="font-bold text-lg">Thank you for your business!</p>
+    <p>Bank: HDFC Bank • A/c: 50200012345678 • IFSC: HDFC0000123</p>
+    <p class="mt-6 text-xs">This is a computer-generated invoice • Authorized Signatory</p>
+  </div>
+</div>
+
+<div class="no-print text-center mt-10">
+  <button onclick="window.print()" class="px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-lg">
+    Print / Save as PDF
+  </button>
+  <button onclick="window.close()" class="ml-4 px-8 py-4 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg">
+    Close
+  </button>
+</div>
+
+</body>
+</html>

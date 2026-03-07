@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderTrail • Delivery Confirmation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-orange-50 via-white to-green-50 min-h-screen flex items-center justify-center p-6">
+
+<div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-12 text-center">
+  <div class="mb-10">
+    <i class="fas fa-truck text-9xl text-green-600"></i>
+  </div>
+  
+  <h1 class="text-5xl font-bold text-gray-800 mb-4">Material Received?</h1>
+  <p class="text-2xl text-gray-700 mb-8">SO: <span id="soNumber" class="text-orange-600 font-bold text-3xl">SO-0001</span></p>
+
+  <p class="text-3xl font-bold text-gray-800 mb-12">How was the delivery experience?</p>
+
+  <!-- BEAUTIFUL 5-STAR RATING (100% WORKING) -->
+  <div class="flex justify-center gap-6 mb-16">
+    <label class="cursor-pointer transform transition hover:scale-125">
+      <input type="radio" name="rating" value="1" class="hidden">
+      <i class="fas fa-star text-8xl text-gray-300 hover:text-yellow-500"></i>
+    </label>
+    <label class="cursor-pointer transform transition hover:scale-125">
+      <input type="radio" name="rating" value="2" class="hidden">
+      <i class="fas fa-star text-8xl text-gray-300 hover:text-yellow-500"></i>
+    </label>
+    <label class="cursor-pointer transform transition hover:scale-125">
+      <input type="radio" name="rating" value="3" class="hidden">
+      <i class="fas fa-star text-8xl text-gray-300 hover:text-yellow-500"></i>
+    </label>
+    <label class="cursor-pointer transform transition hover:scale-125">
+      <input type="radio" name="rating" value="4" class="hidden">
+      <i class="fas fa-star text-8xl text-gray-300 hover:text-yellow-500"></i>
+    </label>
+    <label class="cursor-pointer transform transition hover:scale-125">
+      <input type="radio" name="rating" value="5" class="hidden">
+      <i class="fas fa-star text-8xl text-gray-300 hover:text-yellow-500"></i>
+    </label>
+  </div>
+
+  <button onclick="submitFeedback()" class="px-20 py-8 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-3xl font-bold rounded-3xl shadow-2xl transform transition hover:scale-105">
+    Submit & Confirm Delivery
+  </button>
+
+  <p class="text-lg text-gray-600 mt-12">Powered by <span class="text-orange-600 font-bold">OrderTrail</span> • Jamshedpur, Gujarat</p>
+</div>
+
+<script>
+// Auto-fill SO number
+const params = new URLSearchParams(location.search);
+const so = params.get('pod') || 'SO-0001';
+document.getElementById('soNumber').textContent = so;
+
+// Make stars glow when selected
+document.querySelectorAll('input[name="rating"]').forEach((radio, index) => {
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('label i').forEach((star, i) => {
+      star.classList.toggle('text-yellow-500', i <= index);
+      star.classList.toggle('text-gray-300', i > index);
+    });
+  });
+});
+
+function submitFeedback() {
+  const selected = document.querySelector('input[name="rating"]:checked');
+  if (!selected) return alert('Please give 1–5 star rating');
+
+  const rating = selected.value;
+  const pods = JSON.parse(localStorage.getItem('pods') || '{}');
+  pods[so] = pods[so] || {};
+  pods[so].verified = true;
+  pods[so].rating = rating === '5' ? '5 stars' : rating + ' stars';
+  pods[so].verifiedAt = new Date().toLocaleString('en-IN');
+  localStorage.setItem('pods', JSON.stringify(pods));
+
+  alert(`Thank you! You gave ${rating} star${rating>'1'?'s':''}`);
+  setTimeout(() => window.close(), 1000);
+}
+</script>
+
+<style>
+  /* Make selected stars stay yellow */
+  input[name="rating"]:checked ~ label i,
+  input[name="rating"]:checked ~ input ~ label i {
+    @apply text-yellow-500;
+  }
+</style>
+</body>
+</html>

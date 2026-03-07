@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrderTrail • Current Stock</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+<header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center"><i class="fas fa-gem text-orange-600 text-2xl mr-3"></i><h1 class="text-xl font-bold">OrderTrail</h1></div>
+      <nav class="hidden md:flex space-x-8 text-sm font-medium">
+  <a href="index.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dashboard</a>
+  <a href="sales-orders.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Sales Orders</a>
+  <a href="stock.html" class="text-orange-600 font-bold">Stock</a>
+  <a href="dispatch-new.html" class="text-gray-700 dark:text-gray-300 hover:text-orange-600">Dispatch</a>
+  <a href="#" onclick="localStorage.clear();location.href='login.html'" class="text-red-600 hover:text-red-700">Logout</a>
+</nav>
+      <button id="mob" class="md:hidden"><i class="fas fa-bars text-xl"></i></button>
+    </div>
+    <div id="mobileMenu" class="hidden md:hidden bg-white dark:bg-gray-800 border-t">...</div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-10">
+  <div class="flex justify-between items-center mb-8">
+    <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Current Godown Stock</h2>
+    <button onclick="location.reload()" class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg shadow">
+      Refresh Stock
+    </button>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-100 dark:bg-gray-700 text-xs uppercase">
+        <tr>
+          <th class="px-6 py-4 text-left">Product</th>
+          <th class="px-6 py-4 text-center">Shade</th>
+          <th class="px-6 py-4 text-center">Size</th>
+          <th class="px-6 py-4 text-center">Boxes in Stock</th>
+          <th class="px-6 py-4 text-center">Status</th>
+        </tr>
+      </thead>
+      <tbody id="stockTable" class="divide-y divide-gray-200 dark:divide-gray-700">
+        <!-- Filled by JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+if(!localStorage.getItem('isLoggedIn')) location.href='login.html';
+document.getElementById('mob').onclick=()=>document.getElementById('mobileMenu').classList.toggle('hidden');
+
+// Default stock if none exists
+const defaultStock = {
+  "Nano Polished 800x800 SH-05": 460,
+  "Wood Plank 600x1200 WD-02": 500,
+  "Double Charge 600x600 DC-01": 280,
+  "Glazed Vitrified 800x800 GV-10": 90,
+  "Full Body 1200x1200 FB-03": 120
+};
+
+let stock = JSON.parse(localStorage.getItem('stock') || '{}');
+if (Object.keys(stock).length === 0) {
+  stock = defaultStock;
+  localStorage.setItem('stock', JSON.stringify(stock));
+}
+
+const tbody = document.getElementById('stockTable');
+Object.entries(stock).forEach(([product, boxes]) => {
+  const [name, size, shade] = product.split(' ');
+  const isLow = boxes < 100;
+  const row = document.createElement('tr');
+  row.className = isLow ? 'bg-red-50 dark:bg-red-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700';
+  row.innerHTML = `
+    <td class="px-6 py-5 font-medium">${name}</td>
+    <td class="px-6 py-5 text-center">${size}</td>
+    <td class="px-6 py-5 text-center">${shade}</td>
+    <td class="px-6 py-5 text-center text-2xl font-bold ${isLow ? 'text-red-600' : 'text-green-600'}">${boxes}</td>
+    <td class="px-6 py-5 text-center">
+      ${isLow ? '<span class="px-4 py-2 bg-red-100 text-red-800 rounded-full text-xs font-bold">LOW STOCK</span>' 
+             : '<span class="px-4 py-2 bg-green-100 text-green-800 rounded-full text-xs">Healthy</span>'}
+    </td>
+  `;
+  tbody.appendChild(row);
+});
+</script>
+</body>
+</html>
